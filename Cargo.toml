@@ -11,6 +11,7 @@ clap = { version = "4.5.3", features = ["derive"] }
 cursive = { git = "https://github.com/gyscos/cursive.git", default-features = false, features = ["crossterm-backend"] }
 elevate = "0.6.1"
 libbtrfs = "0.0.12"
+nix = { version = "0.28.0", features = ["fs"] }
 regex = "1.10.4"
 tempfile = "3.10.1"
 

@@ -5,6 +5,8 @@ pub(crate) use std::env::consts::ARCH;
 use std::fs;
 use std::path::{Path, PathBuf};
 use tempfile::TempDir;
+use nix::sys::statvfs::statvfs;
+use nix::libc;
 
 /// A structure representing an item subject to rollback actions.
 ///
@@ -128,8 +130,11 @@ pub(crate) fn reset_rollback_items(rollback_items: &mut Vec<RollbackItem>) {
 ///
 /// `Ok(true)` if the filesystem type is `overlayfs`, `Ok(false)` otherwise, or an `Error` if the command execution fails.
 pub(crate) fn is_transactional() -> Result<bool, Box<dyn Error>> {
-    let filesystem_type = get_command_output("stat", &["-f", "-c", "%T", "/etc"])?;
-    Ok(filesystem_type == "overlayfs")
+    let stats = statvfs(Path::new("/run/media/tobias/Archiv"))?;
+    const FS_TYPE_ID: libc::c_ulong = 0x794c7630;
+    println!("{}", FS_TYPE_ID);
+
+    Ok(stats.filesystem_id() == FS_TYPE_ID)
 }
 
 /// Retrieves detailed information about the root Btrfs snapshot.
@@ -494,4 +499,8 @@ pub(crate) fn is_installed(
     let installed_flag_exists = installed_flag_path.exists();
 
     Ok(bootloader_version_successful && installed_flag_exists)
+}
+
+pub(crate) fn get_shimdir() -> String {
+    format!("/usr/share/efi/{}", ARCH)
 }
